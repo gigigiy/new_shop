@@ -1,0 +1,238 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import javax.persistence.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ShoppingCartApp extends Application {
+
+    private Map<Integer, Product> cart = new HashMap<>();
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Простой магазин");
+
+        VBox productBox = new VBox(10);
+        productBox.setPadding(new Insets(10));
+        productBox.getChildren().addAll(
+                createProduct(1, "Товар 1", 10.00),
+                createProduct(2, "Товар 2", 20.00)
+        );
+
+        VBox cartBox = new VBox(10);
+        cartBox.setPadding(new Insets(10));
+        Label totalLabel = new Label("Общая сумма: $0.00");
+        cartBox.getChildren().addAll(new Label("Корзина"), totalLabel);
+
+        VBox root = new VBox(20);
+        root.getChildren().addAll(productBox, cartBox);
+
+        Scene scene = new Scene(root, 400, 300);
+        primaryStage.setScene(scene);
+
+        // Добавим обработку закрытия приложения для закрытия фабрики сессий Hibernate
+        primaryStage.setOnCloseRequest(event -> {
+            DatabaseUtil.shutdown();
+            primaryStage.close();
+        });
+
+        // Загрузим товары из базы данных при запуске
+        loadCartItems();
+
+        primaryStage.show();
+    }
+
+    private HBox createProduct(int productId, String productName, double productPrice) {
+        HBox productHBox = new HBox(10);
+        productHBox.setPadding(new Insets(5));
+
+        Label nameLabel = new Label(productName);
+        Label priceLabel = new Label("Цена: $" + productPrice);
+
+        TextField quantityField = new TextField("1");
+        quantityField.setPrefWidth(50);
+
+        Button addButton = new Button("Добавить");
+        addButton.setOnAction(e -> addToCart(productId, productPrice, Integer.parseInt(quantityField.getText())));
+
+        Button removeButton = new Button("Убрать");
+        removeButton.setOnAction(e -> removeFromCart(productId, productPrice));
+
+        productHBox.getChildren().addAll(nameLabel, priceLabel, quantityField, addButton, removeButton);
+        return productHBox;
+    }
+
+    private void addToCart(int productId, double productPrice, int quantity) {
+        if (cart.containsKey(productId)) {
+            cart.get(productId).setQuantity(cart.get(productId).getQuantity() + quantity);
+        } else {
+            Product product = new Product(productId, productPrice, quantity);
+            cart.put(productId, product);
+        }
+
+        // Сохраняем товар в базу данных
+        DatabaseUtil.saveCartItem(new CartItem(productId, quantity));
+
+        updateCart();
+    }
+
+    private void removeFromCart(int productId, double productPrice) {
+        if (cart.containsKey(productId)) {
+            cart.get(productId).setQuantity(cart.get(productId).getQuantity() - 1);
+            if (cart.get(productId).getQuantity() <= 0) {
+                cart.remove(productId);
+            }
+
+            // Сохраняем обновленную корзину в базу данных
+            DatabaseUtil.updateCart(cart);
+
+            updateCart();
+        }
+    }
+
+    private void updateCart() {
+        double total = cart.values().stream().mapToDouble(Product::getSubtotal).sum();
+        total = Math.max(0, total); // Общая сумма не может быть меньше 0
+
+        System.out.println("Обновление корзины. Общая сумма: $" + total);
+    }
+
+    private void loadCartItems() {
+        List<CartItem> cartItems = DatabaseUtil.getAllCartItems();
+        if (cartItems != null) {
+            for (CartItem item : cartItems) {
+                addToCart(item.getProductId(), 0, item.getQuantity());
+            }
+        }
+        updateCart();
+    }
+}
+
+@Entity
+@Table(name = "cart")
+class CartItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "product_id")
+    private int productId;
+
+    @Column(name = "quantity")
+    private int quantity;
+
+    public CartItem() {
+    }
+
+    public CartItem(int productId, int quantity) {
+        this.productId = productId;
+        this.quantity = quantity;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+}
+
+class DatabaseUtil {
+
+    private static final SessionFactory sessionFactory;
+
+    static {
+        try {
+            Configuration configuration = new Configuration().configure();
+            sessionFactory = configuration.buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
+    public static void saveCartItem(CartItem cartItem) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.saveOrUpdate(cartItem);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+
+    public static List<CartItem> getAllCartItems() {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM CartItem", CartItem.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void updateCart(Map<Integer, Product> cart) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            for (Product product : cart.values()) {
+                CartItem cartItem = new CartItem(product.getId(), product.getQuantity());
+                session.saveOrUpdate(cartItem);
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+
+    public static void shutdown() {
+        sessionFactory.close();
+    }
+}
+
+class Product {
+    private final int id;
+    private final double price;
+    private int quantity;
+
+    public Product(int id, double price, int quantity) {
+        this.id = id;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public double getPrice() {
