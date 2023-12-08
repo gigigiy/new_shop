@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #2E3348;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo7.MainController">
+   <children>
+      <AnchorPane prefHeight="318.0" prefWidth="1000.0" style="-fx-background-color: #fefefe;">
+         <children>
+            <Label layoutX="370.0" layoutY="14.0" prefHeight="49.0" prefWidth="278.0" text="Список продуктов " textFill="#000000af">
+               <font>
+                  <Font name="Century" size="31.0" />
+               </font>
+            </Label>
+            <AnchorPane fx:id="FirstProduct" layoutX="91.0" layoutY="68.0" prefHeight="200.0" prefWidth="260.0" style="-fx-background-color: #686869; -fx-background-radius: 7px;">
+               <children>
+                  <Button fx:id="AddProduct1Button" layoutX="22.0" layoutY="125.0" mnemonicParsing="false" onAction="#handleAddProduct" prefHeight="40.0" prefWidth="90.0" text="Добавить" />
+                  <Label layoutX="22.0" layoutY="40.0" prefHeight="60.0" prefWidth="194.0" style="-fx-background-color: #ffffff; -fx-background-radius: 10px;" text="  Продукт 1 = 10$">
+                     <font>
+                        <Font name="System Italic" size="20.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="DeleteProduct1Button" layoutX="130.0" layoutY="125.0" mnemonicParsing="false" onAction="#handleDeleteProduct" prefHeight="40.0" prefWidth="90.0" text="Убрать" />
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="SecondProduct" layoutX="379.0" layoutY="68.0" prefHeight="200.0" prefWidth="260.0" style="-fx-background-color: #686869; -fx-background-radius: 7;">
+               <children>
+                  <Button fx:id="AddProduct2Button" layoutX="22.0" layoutY="124.0" mnemonicParsing="false" onAction="#handleAddProduct" prefHeight="40.0" prefWidth="90.0" text="Добавить" />
+                  <Label layoutX="22.0" layoutY="40.0" prefHeight="60.0" prefWidth="194.0" style="-fx-background-color: #ffffff; -fx-background-radius: 10;" text="   Продукт 2 = 20$">
+                     <font>
+                        <Font name="System Italic" size="20.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="DeleteProduct2Button" layoutX="130.0" layoutY="124.0" mnemonicParsing="false" onAction="#handleDeleteProduct" prefHeight="40.0" prefWidth="90.0" text="Убрать" />
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="ThirdProduct" layoutX="658.0" layoutY="68.0" prefHeight="200.0" prefWidth="260.0" style="-fx-background-color: #686869; -fx-background-radius: 7;">
+               <children>
+                  <Button fx:id="AddProduct3Button" layoutX="23.0" layoutY="121.0" mnemonicParsing="false" onAction="#handleAddProduct" prefHeight="40.0" prefWidth="90.0" text="Добавить" />
+                  <Label layoutX="23.0" layoutY="40.0" prefHeight="60.0" prefWidth="206.0" style="-fx-background-color: #ffffff; -fx-background-radius: 10;" text="    Продукт 3 = 30$ ">
+                     <font>
+                        <Font name="System Italic" size="20.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="DeleteProduct3Button" layoutX="139.0" layoutY="121.0" mnemonicParsing="false" onAction="#handleDeleteProduct" prefHeight="40.0" prefWidth="90.0" text="Убрать" />
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutY="318.0" prefHeight="382.0" prefWidth="1000.0">
+         <children>
+            <Label layoutX="34.0" layoutY="26.0" prefHeight="71.0" prefWidth="224.0" style="-fx-background-color: #2E3348;" text="Корзина " textFill="WHITE">
+               <font>
+                  <Font name="System Italic" size="49.0" />
+               </font>
+            </Label>
+            <AnchorPane layoutX="34.0" layoutY="110.0" prefHeight="71.0" prefWidth="550.0">
+               <children>
+                  <Label prefHeight="71.0" prefWidth="206.0" text="Общая сумма: " textFill="WHITE">
+                     <font>
+                        <Font size="30.0" />
+                     </font>
+                  </Label>
+                  <AnchorPane layoutX="206.0" layoutY="3.0" prefHeight="71.0" prefWidth="200.0">
+                     <children>
+                        <Label fx:id="TotalPrice" layoutY="-6.0" prefHeight="71.0" prefWidth="200.0" text="Сумма" textFill="WHITE">
+                           <font>
+                              <Font size="30.0" />
+                           </font>
+                        </Label>
+                     </children></AnchorPane>
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
