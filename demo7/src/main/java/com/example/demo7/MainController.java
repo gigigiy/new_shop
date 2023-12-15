@@ -25,6 +25,13 @@ public class MainController {
 
     @FXML
     private Button DeleteProduct3Button;
+
+    @FXML
+    private Label testProduct1;
+    @FXML
+    private Label testProduct2;
+    @FXML
+    private Label testProduct3; 
     @FXML
     private AnchorPane FirstProduct;
 
@@ -67,6 +74,7 @@ public class MainController {
 
         if (sourceButton == DeleteProduct1Button) {
             productPrice = product1Price;
+            testProduct1.setText("You added product " + product1.getText());
         } else if (sourceButton == DeleteProduct2Button) {
             productPrice = product2Price;
         } else if (sourceButton == DeleteProduct3Button) {
